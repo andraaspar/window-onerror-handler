@@ -1,0 +1,24 @@
+{
+  "name": "window-onerror-handler",
+  "version": "0.0.1",
+  "description": "Display uncaught errors in the browser.",
+  "author": {
+    "name": "András Parditka"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andraaspar/window-onerror-handler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andraaspar/window-onerror-handler/issues"
+  },
+  "homepage": "https://github.com/andraaspar/window-onerror-handler#readme",
+  "devDependencies": {
+    "rimraf": "^2.6.1",
+    "typescript": "^2.4.1"
+  },
+  "scripts": {
+    "compile": "rimraf *.js *.d.ts && tsc"
+  }
+}
