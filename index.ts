@@ -1,3 +1,4 @@
+let extraDetailsProviders: (() => string)[] = []
 let ready = false
 let errorsReported = 0
 let errors: any[] = []
@@ -76,7 +77,8 @@ function renderErrors() {
 			'Timestamp: ' + escapeHtml(new Date().toISOString()) + '\n' +
 			'URL: ' + escapeHtml(location.href) + '\n' +
 			'User agent: ' + escapeHtml(navigator.userAgent) + '\n' +
-			'Window size: ' + window.innerWidth + ' x ' + window.innerHeight + '\n' +
+			'Window size: ' + window.innerWidth + ' x ' + window.innerHeight +
+			getExtraDetails() +
 			'</textarea>' +
 			'</p>' +
 			'<p><button>Copy to clipboard</button></p>' +
@@ -118,4 +120,28 @@ function escapeHtml(s: string) {
 	return String(s).replace(/[&<>"']/g, function(s) {
 		return entityMap[s]!
 	})
+}
+
+function getExtraDetails() {
+	let result = ``
+	for (let provider of extraDetailsProviders) {
+		if (provider) {
+			try {
+				result += `\n\n${provider()}`
+			} catch (e) {
+				result += `\n\n[p61rmi] PROVIDER ERROR: ${e}`
+			}
+		}
+	}
+	return result
+}
+
+export function provideExtraDetails(v: () => string) {
+	if (v) {
+		extraDetailsProviders.push(v)
+	}
+}
+
+export function removeExtraDetailsProvider(v: () => string) {
+	extraDetailsProviders = extraDetailsProviders.filter(_ => _ !== v)
 }
