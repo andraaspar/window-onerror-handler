@@ -20,7 +20,7 @@ function start() {
 	if (document.body) { // IE9 is weird
 		ready = true
 		let style = document.createElement('style')
-		style.innerText = `
+		style.innerHTML = `
 .error-popup {
 	box-sizing: border-box;
 	position: absolute;
