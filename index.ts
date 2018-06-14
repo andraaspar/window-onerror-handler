@@ -1,7 +1,8 @@
+const GLOBAL = new Function('return this')()
 let extraDetailsProviders: (() => string)[] = []
 let ready = false
-let errorsReported = 0
 let errors: any[] = []
+let errorsReported = 0
 let entityMap: {[_: string]: string | undefined} = {
 	'&': '&amp;',
 	'<': '&lt;',
@@ -55,6 +56,12 @@ window.onerror = function(messageOrEvent, source, lineno, colno, error) {
 		stack: error && error.stack,
 	}
 	errors.push(e)
+	renderErrors()
+}
+
+if (GLOBAL.woh && GLOBAL.woh.errors && GLOBAL.woh.errors.length) {
+	errors = errors.concat(GLOBAL.woh.errors)
+	errorsReported += GLOBAL.woh.errors.length
 	renderErrors()
 }
 
