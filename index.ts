@@ -46,6 +46,9 @@ function start() {
 }
 
 window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+	if (/ResizeObserver loop limit exceeded/.test(messageOrEvent + '')) {
+		return
+	}
 	if (errorsReported >= 10) return
 	errorsReported++
 	let e = {
