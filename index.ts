@@ -46,7 +46,10 @@ function start() {
 }
 
 window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-	if (/ResizeObserver loop limit exceeded/.test(messageOrEvent + '')) {
+	if (/ResizeObserver/.test(messageOrEvent + '')) {
+		if (window.console) {
+			console.error(`[q21uq0] Ignored error:`, messageOrEvent, source, lineno, colno, error)
+		}
 		return
 	}
 	if (errorsReported >= 10) return
