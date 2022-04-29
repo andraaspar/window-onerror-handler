@@ -88,7 +88,7 @@ window.addEventListener('unhandledrejection', function (error) {
 		source: undefined,
 		lineno: undefined,
 		colno: undefined,
-		stack: error.promise + '',
+		stack: error.reason && error.reason.stack,
 	})
 	renderErrors()
 })

@@ -1,6 +1,6 @@
 {
 	"name": "window-onerror-handler",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"description": "Display uncaught errors in the browser.",
 	"author": {
 		"name": "András Parditka"
