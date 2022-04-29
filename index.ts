@@ -1,9 +1,16 @@
-const GLOBAL = new Function('return this')()
+interface IError {
+	messageOrEvent: any
+	source: string | undefined
+	lineno: number | undefined
+	colno: number | undefined
+	stack: string | undefined
+}
+
 let extraDetailsProviders: (() => string)[] = []
 let ready = false
-let errors: any[] = []
+let errors: IError[] = []
 let errorsReported = 0
-let entityMap: {[_: string]: string | undefined} = {
+let entityMap: { [_: string]: string | undefined } = {
 	'&': '&amp;',
 	'<': '&lt;',
 	'>': '&gt;',
@@ -18,13 +25,14 @@ if (document.readyState === 'loading') {
 }
 
 function start() {
-	if (document.body) { // IE9 is weird
+	if (document.body) {
+		// IE9 is weird
 		ready = true
 		let style = document.createElement('style')
 		style.innerHTML = `
 .error-popup {
 	box-sizing: border-box;
-	position: absolute;
+	position: fixed;
 	z-index: 2147483647;
 	top: 0;
 	bottom: 0;
@@ -45,16 +53,23 @@ function start() {
 	}
 }
 
-window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+window.onerror = function (messageOrEvent, source, lineno, colno, error) {
 	if (/ResizeObserver/.test(messageOrEvent + '')) {
 		if (window.console) {
-			console.error(`[q21uq0] Ignored error:`, messageOrEvent, source, lineno, colno, error)
+			console.error(
+				`[q21uq0] Ignored error:`,
+				messageOrEvent,
+				source,
+				lineno,
+				colno,
+				error,
+			)
 		}
 		return
 	}
 	if (errorsReported >= 10) return
 	errorsReported++
-	let e = {
+	let e: IError = {
 		messageOrEvent: messageOrEvent,
 		source: source,
 		lineno: lineno,
@@ -65,32 +80,67 @@ window.onerror = function(messageOrEvent, source, lineno, colno, error) {
 	renderErrors()
 }
 
-if (GLOBAL.woh && GLOBAL.woh.errors && GLOBAL.woh.errors.length) {
-	errors = errors.concat(GLOBAL.woh.errors)
-	errorsReported += GLOBAL.woh.errors.length
+window.addEventListener('unhandledrejection', function (error) {
+	if (errorsReported >= 10) return
+	errorsReported++
+	errors.push({
+		messageOrEvent: error.reason,
+		source: undefined,
+		lineno: undefined,
+		colno: undefined,
+		stack: error.promise + '',
+	})
+	renderErrors()
+})
+
+if (
+	(window as any).woh &&
+	(window as any).woh.errors &&
+	(window as any).woh.errors.length
+) {
+	errors = errors.concat((window as any).woh.errors)
+	errorsReported += (window as any).woh.errors.length
 	renderErrors()
 }
 
 function renderErrors() {
 	if (!ready) return
 	while (errors.length) {
-		let error = errors.shift()
+		let error = errors.shift()!
 		let markup = document.createElement('div')
 		markup.className = 'error-popup'
 		markup.innerHTML =
 			'<h2>Error</h2>' +
 			'<p><em>Please report this message:</em></p>' +
 			'<p>' +
-			'<textarea cols=40 rows=5>' +
-			'Message: ' + escapeHtml(error.messageOrEvent) + '\n' +
-			'Source: ' + escapeHtml(error.source) + '\n' +
-			'Line:column: ' + escapeHtml(error.lineno) + ':' + escapeHtml(error.colno) + '\n' +
+			'<textarea cols=40 rows=5 style="width:100%">' +
+			'Message: ' +
+			escapeHtml(error.messageOrEvent) +
+			'\n' +
+			'Source: ' +
+			escapeHtml(error.source + '') +
+			'\n' +
+			'Line:column: ' +
+			escapeHtml(error.lineno + '') +
+			':' +
+			escapeHtml(error.colno + '') +
+			'\n' +
 			'Stack trace:\n\n' +
-			escapeHtml(error.stack) + '\n\n' +
-			'Timestamp: ' + escapeHtml(new Date().toISOString()) + '\n' +
-			'URL: ' + escapeHtml(location.href) + '\n' +
-			'User agent: ' + escapeHtml(navigator.userAgent) + '\n' +
-			'Window size: ' + window.innerWidth + ' x ' + window.innerHeight +
+			escapeHtml(error.stack + '') +
+			'\n\n' +
+			'Timestamp: ' +
+			escapeHtml(new Date().toISOString()) +
+			'\n' +
+			'URL: ' +
+			escapeHtml(location.href) +
+			'\n' +
+			'User agent: ' +
+			escapeHtml(navigator.userAgent) +
+			'\n' +
+			'Window size: ' +
+			window.innerWidth +
+			' x ' +
+			window.innerHeight +
 			getExtraDetails() +
 			'</textarea>' +
 			'</p>' +
@@ -98,16 +148,26 @@ function renderErrors() {
 			'<p>' +
 			'<dl class="error-popup-message">' +
 			'<dt>Message</dt>' +
-			'<dd>' + escapeHtml(error.messageOrEvent) + '</dd>' +
+			'<dd>' +
+			escapeHtml(error.messageOrEvent) +
+			'</dd>' +
 			'<dt>Source</dt>' +
-			'<dd>' + escapeHtml(error.source) + '</dd>' +
+			'<dd>' +
+			escapeHtml(error.source + '') +
+			'</dd>' +
 			'<dt>Line:column</dt>' +
-			'<dd>' + escapeHtml(error.lineno) + ':' + escapeHtml(error.colno) + '</dd>' +
+			'<dd>' +
+			escapeHtml(error.lineno + '') +
+			':' +
+			escapeHtml(error.colno + '') +
+			'</dd>' +
 			'<dt>Stack trace</dt>' +
-			'<dd>' + escapeHtml(error.stack) + '</dd>' +
+			'<dd>' +
+			escapeHtml(error.stack + '') +
+			'</dd>' +
 			'</p>' +
 			'<p><button class="error-popup-close-button">Close</button></p>'
-		let clickHandler = function(e: MouseEvent) {
+		let clickHandler = function (e: MouseEvent) {
 			if (e.target instanceof HTMLButtonElement) {
 				if (/\berror-popup-close-button\b/.test(e.target.className)) {
 					markup.removeEventListener('click', clickHandler)
@@ -130,7 +190,7 @@ function renderErrors() {
 }
 
 function escapeHtml(s: string) {
-	return String(s).replace(/[&<>"']/g, function(s) {
+	return s.replace(/[&<>"']/g, function (s) {
 		return entityMap[s]!
 	})
 }
@@ -156,5 +216,5 @@ export function provideExtraDetails(v: () => string) {
 }
 
 export function removeExtraDetailsProvider(v: () => string) {
-	extraDetailsProviders = extraDetailsProviders.filter(_ => _ !== v)
+	extraDetailsProviders = extraDetailsProviders.filter((_) => _ !== v)
 }
