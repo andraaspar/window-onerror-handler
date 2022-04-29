@@ -118,15 +118,15 @@ function renderErrors() {
 			escapeHtml(error.messageOrEvent) +
 			'\n' +
 			'Source: ' +
-			escapeHtml(error.source + '') +
+			escapeHtml(error.source) +
 			'\n' +
 			'Line:column: ' +
-			escapeHtml(error.lineno + '') +
+			escapeHtml(error.lineno) +
 			':' +
-			escapeHtml(error.colno + '') +
+			escapeHtml(error.colno) +
 			'\n' +
 			'Stack trace:\n\n' +
-			escapeHtml(error.stack + '') +
+			escapeHtml(error.stack) +
 			'\n\n' +
 			'Timestamp: ' +
 			escapeHtml(new Date().toISOString()) +
@@ -153,17 +153,17 @@ function renderErrors() {
 			'</dd>' +
 			'<dt>Source</dt>' +
 			'<dd>' +
-			escapeHtml(error.source + '') +
+			escapeHtml(error.source) +
 			'</dd>' +
 			'<dt>Line:column</dt>' +
 			'<dd>' +
-			escapeHtml(error.lineno + '') +
+			escapeHtml(error.lineno) +
 			':' +
-			escapeHtml(error.colno + '') +
+			escapeHtml(error.colno) +
 			'</dd>' +
 			'<dt>Stack trace</dt>' +
 			'<dd>' +
-			escapeHtml(error.stack + '') +
+			escapeHtml(error.stack) +
 			'</dd>' +
 			'</p>' +
 			'<p><button class="error-popup-close-button">Close</button></p>'
@@ -189,8 +189,8 @@ function renderErrors() {
 	}
 }
 
-function escapeHtml(s: string) {
-	return s.replace(/[&<>"']/g, function (s) {
+function escapeHtml(s: unknown) {
+	return (s + '').replace(/[&<>"']/g, function (s) {
 		return entityMap[s]!
 	})
 }
